@@ -1,18 +1,18 @@
 # rust.fractals
 
-Experimenting with Rust and fractals. Because fractals are cool.
+Real-time fractal viewer with perturbation theory deep zoom, built in Rust with SDL2.
 
 ## Fractals
 
-- **Mandelbrot** — the classic z = z^2 + c
+- **Mandelbrot** — the classic z = z² + c
 - **Julia** — fixed c = -0.8 + 0.156i
 - **Burning Ship** — abs of real/imaginary before squaring
 - **Tricorn** — complex conjugate before squaring
-- **Newton** — Newton's method on z^3 - 1, colored by root convergence
+- **Newton** — Newton's method on z³ - 1, colored by root convergence
 
 ## Prerequisites
 
-- [Rust](https://rustup.rs/) (1.85+ for rug crate)
+- [Rust](https://rustup.rs/) (1.85+)
 - SDL2: `brew install sdl2 sdl2_ttf`
 - GMP/MPFR (for arbitrary precision deep zoom): `brew install gmp mpfr`
 
@@ -48,15 +48,25 @@ LIBRARY_PATH=/opt/homebrew/lib cargo run
 | R | Reset view |
 | Escape | Quit |
 
+## HUD
+
+The top-right corner always displays:
+- **Zoom level** — current magnification
+- **Re / Im** — center coordinates (15 decimal places)
+
+Useful for finding interesting locations to add to the autoplay.
+
 ## Auto-Play
 
-Auto-play is **on by default**. It smoothly zooms into interesting points for each fractal and automatically cycles through all 5 fractal types. Press **Space** to toggle. For Mandelbrot, auto-play includes ultra-deep zoom locations (10^14 to 10^20) powered by perturbation theory.
+Auto-play is **on by default**. It smoothly pans to interesting points for each fractal, then zooms in. Automatically cycles through all 5 fractal types. Press **Space** to toggle.
 
-## Performance Features
+For Mandelbrot, auto-play includes ultra-deep zoom locations (10^14 to 10^20) powered by perturbation theory.
 
-- **Pre-computed color palette** — 4096-entry LUT eliminates trig from the hot loop
+## Performance
+
+- **Pre-computed color palette** — 4096-entry LUT, no trig in the hot loop
 - **Distance estimation** — derivative tracking skips fully-exterior Mandelbrot pixels
 - **Cardioid/bulb skip** — instant interior detection for ~30% of Mandelbrot viewport
 - **Periodicity checking** — exponential-backoff cycle detection for interior points
-- **Perturbation theory** — arbitrary-precision reference orbit + f64 delta iteration kicks in automatically at zoom > 10^13 for Mandelbrot, enabling zoom to 10^50+
+- **Perturbation theory** — arbitrary-precision reference orbit + f64 delta iteration, kicks in automatically at zoom > 10^13 for Mandelbrot (zoom to 10^50+)
 - **Rayon parallelism** — per-row parallel computation across all CPU cores
