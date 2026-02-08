@@ -11,6 +11,7 @@ use objects::Complex;
 use rayon::prelude::*;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use menu::render_hud;
 use utils::math::{burning_ship, julia, mandelbrot_de, newton, tricorn, ColorPalette};
 use utils::perturbation::{compute_reference_orbit, mandelbrot_perturbation, GLITCH_SENTINEL};
 use utils::view::create_texture;
@@ -300,6 +301,9 @@ fn main() {
         // Draw menu overlay on top
         menu.render(&mut canvas, &font, current_fractal, autoplay.is_enabled())
             .ok();
+
+        // Always-visible HUD: zoom + coordinates
+        render_hud(&mut canvas, &font, zoom, center_re, center_im, WIDTH).ok();
 
         canvas.present();
     }
