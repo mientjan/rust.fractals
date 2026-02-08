@@ -103,19 +103,25 @@ impl AutoPlay {
             self.location_timer = now;
         }
 
+        let elapsed = now.duration_since(self.location_timer).as_secs_f64();
+        let duration = self.location_duration.as_secs_f64();
+        let raw_t = (elapsed / duration).min(1.0);
+
+        // Pan completes in the first 35% of the animation, zoom starts after 25%
+        // This ensures the center is on the interesting area before zoom kicks in
+        let pan_t = ease_in_out((raw_t / 0.35).min(1.0));
+        let zoom_t = ease_in_out(((raw_t - 0.25) / 0.75).max(0.0).min(1.0));
+
         if self.location_index < locations.len() {
             // Standard f64 location
             self.in_deep_zoom = false;
             let (target_re, target_im, target_zoom) = locations[self.location_index];
-            let elapsed = now.duration_since(self.location_timer).as_secs_f64();
-            let duration = self.location_duration.as_secs_f64();
-            let t = ease_in_out((elapsed / duration).min(1.0));
 
-            *center_re = self.center_start.0 + (target_re - self.center_start.0) * t;
-            *center_im = self.center_start.1 + (target_im - self.center_start.1) * t;
+            *center_re = self.center_start.0 + (target_re - self.center_start.0) * pan_t;
+            *center_im = self.center_start.1 + (target_im - self.center_start.1) * pan_t;
             let log_start = self.zoom_start.ln();
             let log_target = target_zoom.ln();
-            *zoom = (log_start + (log_target - log_start) * t).exp();
+            *zoom = (log_start + (log_target - log_start) * zoom_t).exp();
         } else {
             // Deep zoom location (string-based coordinates)
             let deep_idx = self.location_index - locations.len();
@@ -125,19 +131,14 @@ impl AutoPlay {
             self.deep_target_re = target_re_str.to_string();
             self.deep_target_im = target_im_str.to_string();
 
-            // Parse target for f64 interpolation (approximate, but close enough for display)
             let target_re: f64 = target_re_str.parse().unwrap_or(0.0);
             let target_im: f64 = target_im_str.parse().unwrap_or(0.0);
 
-            let elapsed = now.duration_since(self.location_timer).as_secs_f64();
-            let duration = self.location_duration.as_secs_f64();
-            let t = ease_in_out((elapsed / duration).min(1.0));
-
-            *center_re = self.center_start.0 + (target_re - self.center_start.0) * t;
-            *center_im = self.center_start.1 + (target_im - self.center_start.1) * t;
+            *center_re = self.center_start.0 + (target_re - self.center_start.0) * pan_t;
+            *center_im = self.center_start.1 + (target_im - self.center_start.1) * pan_t;
             let log_start = self.zoom_start.ln();
             let log_target = target_zoom.ln();
-            *zoom = (log_start + (log_target - log_start) * t).exp();
+            *zoom = (log_start + (log_target - log_start) * zoom_t).exp();
         }
 
         fractal_changed
