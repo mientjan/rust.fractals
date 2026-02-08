@@ -1,6 +1,12 @@
 [package]
 name = "fractals"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [dependencies]
+sdl2 = { version = "0.37.0", features = ["ttf"] }
+rayon = "1.10.0"
+rug = "1.26"
+
+[profile.release]
+opt-level = 3
